@@ -3,9 +3,9 @@
 ## Auto-generated, do not modify!
 ####################################################################################
 
-PROJECT_NAME := adrv9009_a10soc
+PROJECT_NAME := fmcomms8_a10soc
 
-M_DEPS += ../common/adrv9009_qsys.tcl
+M_DEPS += ../common/fmcomms8_qsys.tcl
 M_DEPS += ../../common/a10soc/a10soc_system_qsys.tcl
 M_DEPS += ../../common/a10soc/a10soc_system_assign.tcl
 M_DEPS += ../../common/a10soc/a10soc_plddr4_dacfifo_qsys.tcl

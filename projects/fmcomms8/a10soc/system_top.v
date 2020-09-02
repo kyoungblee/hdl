@@ -140,13 +140,13 @@ module system_top (
   input             tx_sync_c_1,
   input             sysref_c,
 
-  output            adrv9009_c_tx1_enable,
-  output            adrv9009_c_tx2_enable,
-  output            adrv9009_c_rx1_enable,
-  output            adrv9009_c_rx2_enable,
-  output            adrv9009_c_test,
-  output            adrv9009_c_reset_b,
-  input             adrv9009_c_gpint,
+  output            adrv9009_tx1_enable_c,
+  output            adrv9009_tx2_enable_c,
+  output            adrv9009_rx1_enable_c,
+  output            adrv9009_rx2_enable_c,
+  output            adrv9009_test_c,
+  output            adrv9009_reset_b_c,
+  input             adrv9009_gpint_c,
 
   inout             adrv9009_gpio_00_c,
   inout             adrv9009_gpio_01_c,
@@ -168,13 +168,13 @@ module system_top (
   input             tx_sync_d_1,
   input             sysref_c,
 
-  output            adrv9009_d_tx1_enable,
-  output            adrv9009_d_tx2_enable,
-  output            adrv9009_d_rx1_enable,
-  output            adrv9009_d_rx2_enable,
-  output            adrv9009_d_test,
-  output            adrv9009_d_reset_b,
-  input             adrv9009_d_gpint,
+  output            adrv9009_tx1_enable_d,
+  output            adrv9009_tx2_enable_d,
+  output            adrv9009_rx1_enable_d,
+  output            adrv9009_rx2_enable_d,
+  output            adrv9009_test_d,
+  output            adrv9009_reset_b_d,
+  input             adrv9009_gpint_d,
 
   inout             adrv9009_gpio_00_d,
   inout             adrv9009_gpio_01_d,
@@ -186,6 +186,8 @@ module system_top (
   inout             adrv9009_gpio_07_d,
   inout             adrv9009_gpio_09_d,
 
+  input             fan_tach,
+  input             fan_pwm,
   output            hmc7044_reset,
   inout             hmc7044_sync,
   inout             hmc7044_gpio_1,
@@ -197,7 +199,7 @@ module system_top (
   output            spi_csn_adrv9009_d,
 
   output            spi_clk,
-  output            spi_mosi,
+  inout             spi_sdio,
   input             spi_miso);
 
   // internal signals
@@ -210,6 +212,8 @@ module system_top (
   wire    [ 63:0]   gpio_o;
   wire    [  7:0]   spi_csn_s;
   wire              dac_fifo_bypass;
+  wire              spi_mosi;
+  wire              spi0_miso;
 
   // assignments
 
@@ -337,19 +341,19 @@ module system_top (
     .sys_spi_MOSI (spi_mosi),
     .sys_spi_SCLK (spi_clk),
     .sys_spi_SS_n (spi_csn_s),
-    .tx_serial_data_tx_serial_data (tx_serial_data),
+    .tx_serial_data_tx_serial_data ({tx_serial_data_d,tx_serial_data_c}),
     .tx_fifo_bypass_bypass (dac_fifo_bypass),
-    .tx_ref_clk_clk (ref_clk1),
+    .tx_ref_clk_clk (ref_clk_c),
     .tx_sync_export (tx_sync),
-    .tx_sysref_export (sysref),
-    .rx_serial_data_rx_serial_data (rx_serial_data[1:0]),
-    .rx_os_serial_data_rx_serial_data (rx_serial_data[3:2]),
-    .rx_os_ref_clk_clk (ref_clk1),
+    .tx_sysref_export (sysref_c),
+    .rx_serial_data_rx_serial_data ({rx_serial_data_d[1:0],rx_serial_data_c[1:0]}),
+    .rx_os_serial_data_rx_serial_data ({rx_serial_data_d[3:2],rx_serial_data_c[3:2]}),
+    .rx_os_ref_clk_clk (ref_clk_c),
     .rx_os_sync_export (rx_os_sync),
-    .rx_os_sysref_export (sysref),
-    .rx_ref_clk_clk (ref_clk1),
+    .rx_os_sysref_export (sysref_c),
+    .rx_ref_clk_clk (ref_clk_d),
     .rx_sync_export (rx_sync),
-    .rx_sysref_export (sysref));
+    .rx_sysref_export (sysref_d));
 
 endmodule
 
