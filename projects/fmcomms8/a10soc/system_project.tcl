@@ -151,14 +151,14 @@ set_instance_assignment -name IO_STANDARD "1.8 V" -to adrv9009_rx2_enable_d
 set_instance_assignment -name IO_STANDARD "1.8 V" -to adrv9009_reset_b_d
 set_instance_assignment -name IO_STANDARD "1.8 V" -to adrv9009_gpint_d
 
-set_location_assignment PIN_F3    -to fan_tach              ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to fan_pwm               ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_reset         ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_sync          ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_gpio_1        ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_gpio_2        ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_gpio_3        ; ## G28  FMC_HPC_LA25_N
-set_location_assignment PIN_F3    -to hmc7044_gpio_4        ; ## G28  FMC_HPC_LA25_N
+set_location_assignment PIN_G7    -to fan_tach              ; ## C22  FMC_HPC_LA18_CC_P
+set_location_assignment PIN_H7    -to fan_pwm               ; ## C23  FMC_HPC_LA18_CC_P
+set_location_assignment PIN_C14   -to hmc7044_reset         ; ## G09  FMC_HPC_LA03_P
+set_location_assignment PIN_D14   -to hmc7044_sync          ; ## G10  FMC_HPC_LA03_N
+set_location_assignment PIN_B11   -to hmc7044_gpio_1        ; ## G12  FMC_HPC_LA08_P
+set_location_assignment PIN_B12   -to hmc7044_gpio_2        ; ## G13  FMC_HPC_LA08_N
+set_location_assignment PIN_A9    -to hmc7044_gpio_3        ; ## H13  FMC_HPC_LA07_P
+set_location_assignment PIN_B9    -to hmc7044_gpio_4        ; ## H14  FMC_HPC_LA07_N
 
 set_instance_assignment -name IO_STANDARD "1.8 V" -to fan_tach
 set_instance_assignment -name IO_STANDARD "1.8 V" -to fan_pwm
