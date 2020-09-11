@@ -1,15 +1,17 @@
-
 source ../../common/zed/zed_system_bd.tcl
-source ../common/m2k_bd.tcl
+
+#system ID
+ad_ip_parameter axi_sysid_0 CONFIG.ROM_ADDR_BITS 9
+ad_ip_parameter rom_sys_0 CONFIG.PATH_TO_FILE "[pwd]/mem_init_sys.txt"
+ad_ip_parameter rom_sys_0 CONFIG.ROM_ADDR_BITS 9
+set sys_cstring "sys rom custom string placeholder"
+sysid_gen_sys_init_file $sys_cstring
+
 
 set_property name sys_100m_rstgen [get_bd_cells sys_200m_rstgen]
 
 #Use the 100 MHz clock for video DMA, the AXI interface clock is to slow for this in this project.
 ad_ip_parameter sys_ps7 CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ 100.0
-ad_ip_parameter axi_hdmi_clkgen CONFIG.VCO_DIV 4
-ad_ip_parameter axi_hdmi_clkgen CONFIG.VCO_MUL 37.125
-ad_ip_parameter axi_hdmi_clkgen CONFIG.CLK0_DIV 6.250
-
 
 set video_dma_clocks [list \
   axi_hp0_interconnect/ACLK \
@@ -21,6 +23,7 @@ set video_dma_clocks [list \
   axi_hdmi_core/vdma_clk
 ]
 
+source ../common/m2k_bd.tcl
 
 disconnect_bd_net /sys_cpu_resetn [get_bd_pins axi_hp0_interconnect/aresetn]
 ad_connect sys_100m_rstgen/peripheral_aresetn axi_hp0_interconnect/aresetn
