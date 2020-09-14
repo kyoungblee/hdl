@@ -166,7 +166,7 @@ module system_top (
   output            rx_os_sync_d,
   input             tx_sync_d,
   input             tx_sync_d_1,
-  input             sysref_c,
+  input             sysref_d,
 
   output            adrv9009_tx1_enable_d,
   output            adrv9009_tx2_enable_d,
@@ -184,12 +184,12 @@ module system_top (
   inout             adrv9009_gpio_05_d,
   inout             adrv9009_gpio_06_d,
   inout             adrv9009_gpio_07_d,
-  inout             adrv9009_gpio_09_d,
+  inout             adrv9009_gpio_08_d,
 
   input             fan_tach,
   input             fan_pwm,
   output            hmc7044_reset,
-  inout             hmc7044_sync,
+  output            hmc7044_sync,
   inout             hmc7044_gpio_1,
   inout             hmc7044_gpio_2,
   inout             hmc7044_gpio_3,
@@ -215,6 +215,12 @@ module system_top (
   wire              spi_mosi;
   wire              spi0_miso;
 
+  wire              rx_sync;
+  wire              rx_os_sync;
+  wire              tx_sync;
+
+  wire    [ 22:0]   fmcomms8_gpio;
+
   // assignments
 
   assign spi_csn_adrv9009_c = spi_csn_s[0];
@@ -228,6 +234,62 @@ module system_top (
     .spi_miso_i(spi_miso),
     .spi_miso_o(spi0_miso),
     .spi_sdio(spi_sdio));
+
+  assign rx_sync_c = rx_sync;
+  assign rx_sync_d = rx_sync;
+
+  assign rx_os_sync_c = rx_os_sync;
+  assign rx_os_sync_d = rx_os_sync;
+
+  assign tx_sync = tx_sync_c & tx_sync_d;
+
+  assign adrv9009_gpio_00_c = fmcomms8_gpio[0];
+  assign adrv9009_gpio_01_c = fmcomms8_gpio[1];
+  assign adrv9009_gpio_02_c = fmcomms8_gpio[2];
+  assign adrv9009_gpio_03_c = fmcomms8_gpio[3];
+  assign adrv9009_gpio_04_c = fmcomms8_gpio[4];
+  assign adrv9009_gpio_05_c = fmcomms8_gpio[5];
+  assign adrv9009_gpio_06_c = fmcomms8_gpio[6];
+  assign adrv9009_gpio_07_c = fmcomms8_gpio[7];
+  assign adrv9009_gpio_08_c = fmcomms8_gpio[8];
+  assign adrv9009_gpio_00_d = fmcomms8_gpio[9];
+  assign adrv9009_gpio_01_d = fmcomms8_gpio[10];
+  assign adrv9009_gpio_02_d = fmcomms8_gpio[11];
+  assign adrv9009_gpio_03_d = fmcomms8_gpio[12];
+  assign adrv9009_gpio_04_d = fmcomms8_gpio[13];
+  assign adrv9009_gpio_05_d = fmcomms8_gpio[14];
+  assign adrv9009_gpio_06_d = fmcomms8_gpio[15];
+  assign adrv9009_gpio_07_d = fmcomms8_gpio[16];
+  assign adrv9009_gpio_08_d = fmcomms8_gpio[17];
+  assign hmc7044_gpio_1 = fmcomms8_gpio[18];
+  assign hmc7044_gpio_2 = fmcomms8_gpio[19];
+  assign hmc7044_gpio_3 = fmcomms8_gpio[20];
+  assign hmc7044_gpio_4 = fmcomms8_gpio[21];
+
+  assign hmc7044_reset = gpio_o[47];
+  assign hmc7044_sync = gpio_o[48];
+
+  assign adrv9009_tx1_enable_d = gpio_o[40];
+  assign adrv9009_tx2_enable_d = gpio_o[41];
+  assign adrv9009_rx1_enable_d = gpio_o[42];
+  assign adrv9009_rx2_enable_d = gpio_o[43];
+  assign adrv9009_test_d = gpio_o[44];
+  assign adrv9009_reset_b_d = gpio_o[45];
+  assign gpio_i[46] = adrv9009_gpint_d;
+
+  assign adrv9009_tx1_enable_c = gpio_o[33];
+  assign adrv9009_tx2_enable_c = gpio_o[34];
+  assign adrv9009_rx1_enable_c = gpio_o[35];
+  assign adrv9009_rx2_enable_c = gpio_o[36];
+  assign adrv9009_test_c = gpio_o[37];
+  assign adrv9009_reset_b_c = gpio_o[38];
+  assign gpio_i[39] = adrv9009_gpint_c;
+
+  assign dac_fifo_bypass = gpio_o[32];
+
+  assign gpio_i[63:47] = gpio_o[63:47];
+  assign gpio_i[45:40] = gpio_o[45:40];
+  assign gpio_i[38:32] = gpio_o[63:32];
 
   // board stuff (max-v-u21)
 
@@ -343,6 +405,9 @@ module system_top (
     .sys_spi_SS_n (spi_csn_s),
     .tx_serial_data_tx_serial_data ({tx_serial_data_d,tx_serial_data_c}),
     .tx_fifo_bypass_bypass (dac_fifo_bypass),
+    .fmcomms8_gpio_export (fmcomms8_gpio),
+    .core_clk_c_clk (core_clk_c),
+    .core_clk_d_clk (core_clk_d),
     .tx_ref_clk_clk (ref_clk_c),
     .tx_sync_export (tx_sync),
     .tx_sysref_export (sysref_c),

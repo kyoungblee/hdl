@@ -25,7 +25,18 @@ set RX_OS_SAMPLES_PER_CHANNEL [expr $RX_OS_NUM_OF_LANES * 32 / \
 
 set dac_fifo_name avl_fmcomms8_tx_fifo
 set dac_data_width 256
-set dac_dma_data_width 128
+set dac_dma_data_width 256
+
+# JESD204B/C clock bridges
+
+ add_instance core_clk_c altera_clock_bridge
+ set_instance_parameter_value core_clk_c {EXPLICIT_CLOCK_RATE} {245760000}
+
+ add_instance core_clk_d altera_clock_bridge
+ set_instance_parameter_value core_clk_d {EXPLICIT_CLOCK_RATE} {245760000}
+
+set_instance_parameter_value sys_hps {H2F_USER0_CLK_FREQ} {200}
+#set_instance_parameter_value sys_hps {F2SDRAM_ADDRESS_WIDTH} {30}
 
 # fmcomms8_tx JESD204
 
@@ -36,7 +47,8 @@ set_instance_parameter_value fmcomms8_tx_jesd204 {SOFT_PCS} {true}
 set_instance_parameter_value fmcomms8_tx_jesd204 {LANE_RATE} {9830.4}
 set_instance_parameter_value fmcomms8_tx_jesd204 {REFCLK_FREQUENCY} {245.76}
 set_instance_parameter_value fmcomms8_tx_jesd204 {NUM_OF_LANES} $TX_NUM_OF_LANES
-set_instance_parameter_value fmcomms8_tx_jesd204 {LANE_MAP} {0 3 2 1}
+#set_instance_parameter_value fmcomms8_tx_jesd204 {LANE_MAP} {0 3 2 1}
+set_instance_parameter_value fmcomms8_tx_jesd204 {EXT_DEVICE_CLK_EN} {1}
 
 add_connection sys_clk.clk fmcomms8_tx_jesd204.sys_clk
 add_connection sys_clk.clk_reset fmcomms8_tx_jesd204.sys_resetn
@@ -58,6 +70,7 @@ set_instance_parameter_value fmcomms8_rx_jesd204 {SOFT_PCS} {true}
 set_instance_parameter_value fmcomms8_rx_jesd204 {LANE_RATE} {9830.4}
 set_instance_parameter_value fmcomms8_rx_jesd204 {REFCLK_FREQUENCY} {245.76}
 set_instance_parameter_value fmcomms8_rx_jesd204 {NUM_OF_LANES} $RX_NUM_OF_LANES
+set_instance_parameter_value fmcomms8_rx_jesd204 {EXT_DEVICE_CLK_EN} {1}
 
 add_connection sys_clk.clk fmcomms8_rx_jesd204.sys_clk
 add_connection sys_clk.clk_reset fmcomms8_rx_jesd204.sys_resetn
@@ -79,6 +92,7 @@ set_instance_parameter_value fmcomms8_rx_os_jesd204 {SOFT_PCS} {true}
 set_instance_parameter_value fmcomms8_rx_os_jesd204 {LANE_RATE} {9830.4}
 set_instance_parameter_value fmcomms8_rx_os_jesd204 {REFCLK_FREQUENCY} {245.76}
 set_instance_parameter_value fmcomms8_rx_os_jesd204 {NUM_OF_LANES} $RX_OS_NUM_OF_LANES
+set_instance_parameter_value fmcomms8_rx_os_jesd204 {EXT_DEVICE_CLK_EN} {1}
 
 add_connection sys_clk.clk fmcomms8_rx_os_jesd204.sys_clk
 add_connection sys_clk.clk_reset fmcomms8_rx_os_jesd204.sys_resetn
@@ -123,12 +137,15 @@ add_connection sys_clk.clk_reset axi_fmcomms8_rx.s_axi_reset
 add_connection sys_clk.clk axi_fmcomms8_rx_os.s_axi_clock
 add_connection sys_clk.clk_reset axi_fmcomms8_rx_os.s_axi_reset
 
-add_connection fmcomms8_tx_jesd204.link_clk axi_fmcomms8_tx.link_clk
+add_connection core_clk_c.out_clk axi_fmcomms8_tx.link_clk
+add_connection core_clk_c.out_clk fmcomms8_tx_jesd204.device_clk
 add_connection axi_fmcomms8_tx.link_data fmcomms8_tx_jesd204.link_data
-add_connection fmcomms8_rx_jesd204.link_clk axi_fmcomms8_rx.link_clk
+add_connection core_clk_d.out_clk axi_fmcomms8_rx.link_clk
+add_connection core_clk_d.out_clk fmcomms8_rx_jesd204.device_clk
 add_connection fmcomms8_rx_jesd204.link_sof axi_fmcomms8_rx.if_link_sof
 add_connection fmcomms8_rx_jesd204.link_data axi_fmcomms8_rx.link_data
-add_connection fmcomms8_rx_os_jesd204.link_clk axi_fmcomms8_rx_os.link_clk
+add_connection core_clk_c.out_clk axi_fmcomms8_rx_os.link_clk
+add_connection core_clk_c.out_clk fmcomms8_rx_os_jesd204.device_clk
 add_connection fmcomms8_rx_os_jesd204.link_sof axi_fmcomms8_rx_os.if_link_sof
 add_connection fmcomms8_rx_os_jesd204.link_data axi_fmcomms8_rx_os.link_data
 
@@ -139,7 +156,7 @@ set_instance_parameter_value axi_fmcomms8_tx_upack {NUM_OF_CHANNELS} $TX_NUM_OF_
 set_instance_parameter_value axi_fmcomms8_tx_upack {SAMPLES_PER_CHANNEL} $TX_SAMPLES_PER_CHANNEL
 set_instance_parameter_value axi_fmcomms8_tx_upack {SAMPLE_DATA_WIDTH} $TX_SAMPLE_WIDTH
 set_instance_parameter_value axi_fmcomms8_tx_upack {INTERFACE_TYPE} {1}
-add_connection fmcomms8_tx_jesd204.link_clk axi_fmcomms8_tx_upack.clk
+add_connection core_clk_c.out_clk axi_fmcomms8_tx_upack.clk
 add_connection fmcomms8_tx_jesd204.link_reset axi_fmcomms8_tx_upack.reset
 for {set i 0} {$i < $TX_NUM_OF_CONVERTERS} {incr i} {
   add_connection axi_fmcomms8_tx_upack.dac_ch_$i axi_fmcomms8_tx.dac_ch_$i
@@ -150,7 +167,7 @@ set_instance_parameter_value axi_fmcomms8_rx_cpack {NUM_OF_CHANNELS} $RX_NUM_OF_
 set_instance_parameter_value axi_fmcomms8_rx_cpack {SAMPLES_PER_CHANNEL} $RX_SAMPLES_PER_CHANNEL
 set_instance_parameter_value axi_fmcomms8_rx_cpack {SAMPLE_DATA_WIDTH} $RX_SAMPLE_WIDTH
 add_connection fmcomms8_rx_jesd204.link_reset axi_fmcomms8_rx_cpack.reset
-add_connection fmcomms8_rx_jesd204.link_clk axi_fmcomms8_rx_cpack.clk
+add_connection core_clk_d.out_clk axi_fmcomms8_rx_cpack.clk
 for {set i 0} {$i < $RX_NUM_OF_CONVERTERS} {incr i} {
   add_connection axi_fmcomms8_rx.adc_ch_$i axi_fmcomms8_rx_cpack.adc_ch_$i
 }
@@ -161,7 +178,7 @@ set_instance_parameter_value axi_fmcomms8_rx_os_cpack {NUM_OF_CHANNELS} $RX_OS_N
 set_instance_parameter_value axi_fmcomms8_rx_os_cpack {SAMPLES_PER_CHANNEL} $RX_OS_SAMPLES_PER_CHANNEL
 set_instance_parameter_value axi_fmcomms8_rx_os_cpack {SAMPLE_DATA_WIDTH} $RX_OS_SAMPLE_WIDTH
 add_connection fmcomms8_rx_os_jesd204.link_reset axi_fmcomms8_rx_os_cpack.reset
-add_connection fmcomms8_rx_os_jesd204.link_clk axi_fmcomms8_rx_os_cpack.clk
+add_connection core_clk_c.out_clk axi_fmcomms8_rx_os_cpack.clk
 for {set i 0} {$i < $RX_OS_NUM_OF_CONVERTERS} {incr i} {
   add_connection axi_fmcomms8_rx_os.adc_ch_$i axi_fmcomms8_rx_os_cpack.adc_ch_$i
 }
@@ -174,7 +191,7 @@ ad_dacfifo_create $dac_fifo_name $dac_data_width $dac_dma_data_width $dac_fifo_a
 add_interface tx_fifo_bypass conduit end
 set_interface_property tx_fifo_bypass EXPORT_OF avl_fmcomms8_tx_fifo.if_bypass
 
-add_connection fmcomms8_tx_jesd204.link_clk avl_fmcomms8_tx_fifo.if_dac_clk
+add_connection core_clk_c.out_clk avl_fmcomms8_tx_fifo.if_dac_clk
 add_connection fmcomms8_tx_jesd204.link_reset avl_fmcomms8_tx_fifo.if_dac_rst
 add_connection axi_fmcomms8_tx_upack.if_packed_fifo_rd_en avl_fmcomms8_tx_fifo.if_dac_valid
 add_connection avl_fmcomms8_tx_fifo.if_dac_data axi_fmcomms8_tx_upack.if_packed_fifo_rd_data
@@ -224,7 +241,7 @@ set_instance_parameter_value axi_fmcomms8_rx_dma {CYCLIC} {0}
 set_instance_parameter_value axi_fmcomms8_rx_dma {DMA_TYPE_DEST} {0}
 set_instance_parameter_value axi_fmcomms8_rx_dma {DMA_TYPE_SRC} {2}
 set_instance_parameter_value axi_fmcomms8_rx_dma {FIFO_SIZE} {16}
-add_connection fmcomms8_rx_jesd204.link_clk axi_fmcomms8_rx_dma.if_fifo_wr_clk
+add_connection core_clk_d.out_clk axi_fmcomms8_rx_dma.if_fifo_wr_clk
 add_connection axi_fmcomms8_rx_cpack.if_packed_fifo_wr_en axi_fmcomms8_rx_dma.if_fifo_wr_en
 add_connection axi_fmcomms8_rx_cpack.if_packed_fifo_wr_sync axi_fmcomms8_rx_dma.if_fifo_wr_sync
 add_connection axi_fmcomms8_rx_cpack.if_packed_fifo_wr_data axi_fmcomms8_rx_dma.if_fifo_wr_din
@@ -247,7 +264,7 @@ set_instance_parameter_value axi_fmcomms8_rx_os_dma {CYCLIC} {0}
 set_instance_parameter_value axi_fmcomms8_rx_os_dma {DMA_TYPE_DEST} {0}
 set_instance_parameter_value axi_fmcomms8_rx_os_dma {DMA_TYPE_SRC} {2}
 set_instance_parameter_value axi_fmcomms8_rx_os_dma {FIFO_SIZE} {16}
-add_connection fmcomms8_rx_os_jesd204.link_clk axi_fmcomms8_rx_os_dma.if_fifo_wr_clk
+add_connection core_clk_c.out_clk axi_fmcomms8_rx_os_dma.if_fifo_wr_clk
 add_connection axi_fmcomms8_rx_os_cpack.if_packed_fifo_wr_en axi_fmcomms8_rx_os_dma.if_fifo_wr_en
 add_connection axi_fmcomms8_rx_os_cpack.if_packed_fifo_wr_sync  axi_fmcomms8_rx_os_dma.if_fifo_wr_sync
 add_connection axi_fmcomms8_rx_os_cpack.if_packed_fifo_wr_data axi_fmcomms8_rx_os_dma.if_fifo_wr_din
@@ -262,7 +279,7 @@ add_connection sys_dma_clk.clk_reset axi_fmcomms8_rx_os_dma.m_dest_axi_reset
 add_instance avl_fmcomms8_gpio altera_avalon_pio
 set_instance_parameter_value avl_fmcomms8_gpio {direction} {Bidir}
 set_instance_parameter_value avl_fmcomms8_gpio {generateIRQ} {1}
-set_instance_parameter_value avl_fmcomms8_gpio {width} {19}
+set_instance_parameter_value avl_fmcomms8_gpio {width} {22}
 add_connection sys_clk.clk avl_fmcomms8_gpio.clk
 add_connection sys_clk.clk_reset avl_fmcomms8_gpio.reset
 add_interface fmcomms8_gpio conduit end
@@ -270,19 +287,33 @@ set_interface_property fmcomms8_gpio EXPORT_OF avl_fmcomms8_gpio.external_connec
 
 # reconfig sharing
 
-for {set i 0} {$i < 4} {incr i} {
+for {set i 0} {$i < 8} {incr i} {
   add_instance avl_adxcfg_${i} avl_adxcfg
   add_connection sys_clk.clk avl_adxcfg_${i}.rcfg_clk
   add_connection sys_clk.clk_reset avl_adxcfg_${i}.rcfg_reset_n
   add_connection avl_adxcfg_${i}.rcfg_m0 fmcomms8_tx_jesd204.phy_reconfig_${i}
 
-  if {$i < 2} {
-    add_connection avl_adxcfg_${i}.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_${i}
-  } else {
-    set j [expr $i - 2]
-    add_connection avl_adxcfg_${i}.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_${j}
-  }
+#  if {$i < 2} {
+#    add_connection avl_adxcfg_${i}.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_${i}
+#  } else {
+#    set j [expr $i - 2]
+#    add_connection avl_adxcfg_${i}.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_${j}
+#  }
 }
+    add_connection avl_adxcfg_0.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_0
+    add_connection avl_adxcfg_1.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_1
+    add_connection avl_adxcfg_4.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_2
+    add_connection avl_adxcfg_5.rcfg_m1 fmcomms8_rx_jesd204.phy_reconfig_3
+    add_connection avl_adxcfg_2.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_0
+    add_connection avl_adxcfg_3.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_1
+    add_connection avl_adxcfg_6.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_2
+    add_connection avl_adxcfg_7.rcfg_m1 fmcomms8_rx_os_jesd204.phy_reconfig_3
+
+add_interface core_clk_c   clock   sink
+set_interface_property core_clk_c    EXPORT_OF core_clk_c.in_clk
+
+add_interface core_clk_d   clock   sink
+set_interface_property core_clk_d    EXPORT_OF core_clk_d.in_clk
 
 # addresses
 
@@ -294,13 +325,19 @@ ad_cpu_interconnect 0x00028000 avl_adxcfg_0.rcfg_s0
 ad_cpu_interconnect 0x00029000 avl_adxcfg_1.rcfg_s0
 ad_cpu_interconnect 0x0002a000 avl_adxcfg_2.rcfg_s0
 ad_cpu_interconnect 0x0002b000 avl_adxcfg_3.rcfg_s0
-ad_cpu_interconnect 0x0002c000 axi_fmcomms8_tx_dma.s_axi
+ad_cpu_interconnect 0x0002c000 avl_adxcfg_4.rcfg_s0
+ad_cpu_interconnect 0x0002d000 avl_adxcfg_5.rcfg_s0
+ad_cpu_interconnect 0x0002e000 avl_adxcfg_6.rcfg_s0
+ad_cpu_interconnect 0x0002f000 avl_adxcfg_7.rcfg_s0
+ad_cpu_interconnect 0x00070000 axi_fmcomms8_tx_dma.s_axi
 
 ad_cpu_interconnect 0x00030000 fmcomms8_rx_jesd204.link_reconfig
 ad_cpu_interconnect 0x00034000 fmcomms8_rx_jesd204.link_management
 ad_cpu_interconnect 0x00035000 fmcomms8_rx_jesd204.link_pll_reconfig
 ad_cpu_interconnect 0x00038000 avl_adxcfg_0.rcfg_s1
 ad_cpu_interconnect 0x00039000 avl_adxcfg_1.rcfg_s1
+ad_cpu_interconnect 0x0003a000 avl_adxcfg_4.rcfg_s1
+ad_cpu_interconnect 0x0003b000 avl_adxcfg_5.rcfg_s1
 ad_cpu_interconnect 0x0003c000 axi_fmcomms8_rx_dma.s_axi
 
 ad_cpu_interconnect 0x00040000 fmcomms8_rx_os_jesd204.link_reconfig
@@ -308,6 +345,8 @@ ad_cpu_interconnect 0x00044000 fmcomms8_rx_os_jesd204.link_management
 ad_cpu_interconnect 0x00045000 fmcomms8_rx_os_jesd204.link_pll_reconfig
 ad_cpu_interconnect 0x00048000 avl_adxcfg_2.rcfg_s1
 ad_cpu_interconnect 0x00049000 avl_adxcfg_3.rcfg_s1
+ad_cpu_interconnect 0x0004a000 avl_adxcfg_6.rcfg_s1
+ad_cpu_interconnect 0x0004b000 avl_adxcfg_7.rcfg_s1
 ad_cpu_interconnect 0x0004c000 axi_fmcomms8_rx_os_dma.s_axi
 
 ad_cpu_interconnect 0x00050000 axi_fmcomms8_rx.s_axi
