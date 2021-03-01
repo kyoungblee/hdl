@@ -96,6 +96,7 @@ module system_top (
 
   input             uart0_rx,
   output            uart0_tx,
+  inout             hps_conv_usb_n,
 
   // board gpio
 
@@ -183,29 +184,17 @@ module system_top (
 
   // IO Buffers for I2C
 
-  ALT_IOBUF scl_iobuf (
-    .i(1'b0),
-    .oe(i2c1_scl_oe),
-    .o(i2c1_scl),
-    .io(i2c_scl));
+  ad_iobuf #(.DATA_WIDTH(2)) i_iobuf_i2c (
+    .dio_t ({i2c1_scl_oe,i2c1_sda_oe}),
+    .dio_i (2'b0),
+    .dio_o ({i2c1_scl,i2c1_sda}),
+    .dio_p ({i2c_scl,i2c_sda}));
 
-  ALT_IOBUF sda_iobuf (
-    .i(1'b0),
-    .oe(i2c1_sda_oe),
-    .o(i2c1_sda),
-    .io(i2c_sda));
-
-  ALT_IOBUF scl_video_iobuf (
-    .i(1'b0),
-    .oe(i2c0_out_clk),
-    .o(i2c0_scl_in_clk),
-    .io(hdmi_i2c_scl));
-
-  ALT_IOBUF sda_video_iobuf (
-    .i(1'b0),
-    .oe(i2c0_out_data),
-    .o(i2c0_sda),
-    .io(hdmi_i2c_sda));
+  ad_iobuf #(.DATA_WIDTH(2)) i_iobuf_hdmi_i2c (
+    .dio_t ({i2c0_out_clk,i2c0_out_data}),
+    .dio_i (2'b0),
+    .dio_o ({i2c0_scl_in_clk,i2c0_sda}),
+    .dio_p ({hdmi_i2c_scl,hdmi_i2c_sda}));
 
   system_bd i_system_bd (
     .sys_clk_clk (sys_clk),
@@ -269,6 +258,7 @@ module system_top (
     .sys_hps_hps_io_hps_io_spim1_inst_MOSI (spim1_mosi),
     .sys_hps_hps_io_hps_io_spim1_inst_MISO (spim1_miso),
     .sys_hps_hps_io_hps_io_spim1_inst_SS0 (spim1_ss0),
+    .sys_hps_hps_io_hps_io_gpio_inst_GPIO09 (hps_conv_usb_n),
     .sys_hps_i2c1_sda (i2c1_sda),
     .sys_hps_i2c1_out_data (i2c1_sda_oe),
     .sys_hps_i2c1_clk_clk (i2c1_scl_oe),

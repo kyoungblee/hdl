@@ -4,10 +4,9 @@ source $ad_hdl_dir/library/scripts/adi_ip_xilinx.tcl
 
 adi_ip_create util_axis_fifo
 adi_ip_files util_axis_fifo [list \
-	"address_gray.v" \
-	"address_gray_pipelined.v" \
-	"address_sync.v" \
+	"util_axis_fifo_address_generator.v" \
 	"../common/ad_mem.v" \
+	"../common/ad_mem_asym.v" \
 	"util_axis_fifo.v" \
 ]
 
@@ -24,6 +23,7 @@ adi_add_bus "s_axis" "slave" \
 		{"s_axis_valid" "TVALID"} \
 		{"s_axis_ready" "TREADY"} \
 		{"s_axis_data" "TDATA"} \
+		{"s_axis_tlast" "TLAST"} \
 	}
 
 adi_add_bus "m_axis" "master" \
@@ -33,9 +33,12 @@ adi_add_bus "m_axis" "master" \
 		{"m_axis_valid" "TVALID"} \
 		{"m_axis_ready" "TREADY"} \
 		{"m_axis_data" "TDATA"} \
+		{"m_axis_tlast" "TLAST"} \
 	}
 
 adi_add_bus_clock "m_axis_aclk" "m_axis" "m_axis_aresetn"
-adi_add_bus_clock "s_axis_aclk" "s_axis" "m_axis_aresetn"
+adi_add_bus_clock "s_axis_aclk" "s_axis" "s_axis_aresetn"
+
+## TODO: Validate RD_ADDRESS_WIDTH
 
 ipx::save_core [ipx::current_core]
